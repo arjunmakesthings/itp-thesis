@@ -18,7 +18,7 @@ const rules = {
 	"001": 0,
 
 	//left boundary: 
-	"b00": 0,
+	"b00": 1,
 	"b10": 0,
 	"b11": 0, 
 	"b01": 0,
@@ -39,7 +39,7 @@ function generate(s) {
 		const left = i > 0 ? s[i - 1] : "b";
 		const right = i < s.length - 1 ? s[i + 1] : "b";
 
-		const seq = [left, c, right].join("");
+		const seq = `${left}${c}${right}`;
 
 		s_n.push(rules[seq]); 
 	}
