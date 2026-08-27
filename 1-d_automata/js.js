@@ -54,6 +54,8 @@ function run() {
 		all.push(generate(all[n]));
 	}
 	console.log(all.join("\n")); 
+
+	return all; 
 }
 
 run();
