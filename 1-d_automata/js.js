@@ -2,7 +2,7 @@
 
 //definition: given a starting condition, as a list of numbers [n], we compute subsequent generations i times for [n]*i.
 
-let seed = [0, 1, 1, 0, 0];
+let seed = [0, 1, 0, 1, 0];
 let i = 10;
 
 //impl note: javascript keys have to be declared as a string. 
@@ -11,23 +11,23 @@ const rules = {
 	"000": 1,
 	"100": 0,
 	"110": 0,
-	"101": 0,
+	"101": 1,
 	"010": 1,
 	"011": 0,
-	"111": 0,
+	"111": 1,
 	"001": 0,
 
 	//left boundary: 
 	"b00": 1,
-	"b10": 0,
+	"b10": 1,
 	"b11": 0, 
 	"b01": 0,
 
 	//right boundary: 
-	"00b": 0, 
+	"00b": 1, 
 	"10b": 0, 
 	"11b": 0, 
-	"01b": 0, 
+	"01b": 1, 
 };
 
 function generate(s) {
@@ -50,7 +50,7 @@ function run() {
 	let all = [];
 	all.push(seed);
 
-	for (let n = 0; n < i; n++) {
+	for (let n = 0; n < i-1; n++) {
 		all.push(generate(all[n]));
 	}
 	console.log("js output: " + "\n" + all.join("\n")); 
