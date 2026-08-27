@@ -53,8 +53,7 @@ function run() {
 	for (let n = 0; n < i; n++) {
 		all.push(generate(all[n]));
 	}
-	console.log(all.join("\n")); 
-
+	console.log("js output: " + "\n" + all.join("\n")); 
 	return all; 
 }
 
