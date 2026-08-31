@@ -3,7 +3,7 @@
 //definition: given a starting condition, as a list of numbers [n], we compute subsequent generations i times for [n]*i.
 
 let seed = [0, 1, 0, 1, 0];
-let i = 10;
+let i = 100;
 
 //impl note: javascript keys have to be declared as a string. 
 //definition: if neighbours were 0, produce 1; if neighbours were 1, produce 0.
