@@ -6,3 +6,6 @@ __MACOSX/
 
 #swp files
 .swp
+
+#out files: 
+.out
