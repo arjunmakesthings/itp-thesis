@@ -114,7 +114,7 @@ function automaton(_sp) {
   }
 
   //show new space n_sp.
-  render(n_sp);
+  //render(n_sp);
 
   space = n_sp;
 }
@@ -130,8 +130,10 @@ let counter = 0;
 
 //given a max n, execute the automaton.
 while (counter <= n) {
-  automaton(space);
-
   console.log("generation: " + counter);
+  automaton(space); 
+  
+  //given a space, render it.
+  render(space); 
   counter++;
 }
