@@ -1,7 +1,5 @@
-//2-d cellular automata; october 08th, 2026.
+//2d automata; visualized in p5; october 08th 2026.
 
-//definitions:
-//a cell is an object with properties. currently: state.
 class Cell {
   constructor(s) {
     this.state = s;
@@ -87,14 +85,18 @@ function get_new_state(_p_sp, _idx) {
 
 //given a space, render it.
 function render(_sp) {
-  for (let i = 0; i < _sp.length; i++) {
-    let line = "";
-    for (let j = 0; j < _sp[0].length; j++) {
-      line += _sp[i][j].state + " ";
+  const rows = _sp.length;
+  const cols = _sp[0].length;
+  const ht = height / rows;
+  const wt = width / cols;
+
+  stroke(200);
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      fill(_sp[i][j].state > 0 ? 0 : 255);
+      rect(j * wt, i * ht, wt, ht); //x follows column, y follows row.
     }
-    console.log(line);
   }
-  console.log("");
 }
 
 //given a space of cells, execute an automaton till the program is stopped.
@@ -128,10 +130,17 @@ let space = make_space(r, c);
 let n = 10;
 let counter = 0;
 
-//given a max n, execute the automaton.
-while (counter <= n) {
+function setup() {
+  createCanvas(1000, 1000);
+
+  frameRate (2); 
+}
+
+//execute until program is stopped:
+function draw() {
+  background(255);
+
   automaton(space);
 
-  console.log("generation: " + counter);
-  counter++;
+  //noLoop();
 }
