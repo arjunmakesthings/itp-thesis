@@ -1,94 +1,136 @@
-//2d automata; october 8th, 2026.
+//2-d cellular automata; october 08th, 2026.
 
-//a space is a set of all cells.
-
-class Space {
-  constructor(r, c) {
-    this.contents = [];
-
-    for (let j = 0; j < c; j++) {
-      let row = [];
-      for (let i = 0; i < r; i++) {
-        row.push(new Cell(0));
-      }
-      this.contents.push(row);
-    }
-  }
-}
-
+//definitions:
+//a cell is an object with properties. currently: state.
 class Cell {
   constructor(s) {
     this.state = s;
   }
 }
 
-let r = 3;
-let c = 2;
-
-let space = new Space(r, c);
-
-automata(space);
+//a space is a collection of cells.
+function make_space(_r, _c) {
+  let _sp = [];
+  for (let i = 0; i < _c; i++) {
+    const row = [];
+    for (let j = 0; j < _r; j++) {
+      row.push(new Cell(Math.floor(Math.random() * 2)));
+    }
+    _sp.push(row);
+  }
+  return _sp;
+}
 
 //given an index in a representation of a space, return the indices of its neighbors.
-function get_neighbors(space, r, c) {
-  const rows = space.contents.length;
-  const cols = space.contents[0].length;
-  const at = (i, j) =>
-    i >= 0 && i < rows && j >= 0 && j < cols ? [i, j] : null;
+function get_neighbors(_s, _r, _c) {
+  const rows = _s.length;
+  const cols = _s[0].length;
+  //const at = (i, j) =>
+  //  i >= 0 && i < rows && j >= 0 && j < cols ? [i, j] : null;
 
-  return {
-    //up_left: at(r - 1, c - 1),
-    up: at(r - 1, c),
-    //up_right: at(r - 1, c + 1),
-    left: at(r, c - 1),
-    right: at(r, c + 1),
-    //down_left: at(r + 1, c - 1),
-    down: at(r + 1, c),
-    //down_right: at(r + 1, c + 1),
-  };
+  //wrapping:
+  const at = (i, j) => [((i % rows) + rows) % rows, ((j % cols) + cols) % cols];
+
+  return [
+    //up_left: at(_r - 1, _c - 1),
+    at(_r - 1, _c), //up.
+    //up_right: at(_r - 1, _c + 1),
+    at(_r, _c - 1), //left.
+    at(_r, _c + 1), //right.
+    //down_left: at(_r + 1, _c - 1),
+    at(_r + 1, _c), //down.
+    //down_right: at(_r + 1, _c + 1),
+  ];
+
+  //return {
+  //  //up_left: at(_r - 1, _c - 1),
+  //  up: at(_r - 1, _c),
+  //  //up_right: at(_r - 1, _c + 1),
+  //  left: at(_r, _c - 1),
+  //  right: at(_r, _c + 1),
+  //  //down_left: at(_r + 1, _c - 1),
+  //  down: at(_r + 1, _c),
+  //  //down_right: at(_r + 1, _c + 1),
+  //};
 }
 
-//given a space, cell-index & its neighbors-indices, compute a new state:
-function get_new_state(p_space, cell, neighbors) {
-  let c_state = p_space.contents[cell[0]][cell[1]].state;
-  let n = neighbors;
+//given a space & a cell, evaluate all neighbor states & return a new state for the cell.
+function get_new_state(_p_sp, _idx) {
+  let columns = _p_sp[0].length;
 
-  let alive_neighbors = 0;
+  let c_r = Math.floor(_idx / columns);
+  let c_c = _idx % columns;
+  let cell = _p_sp[c_r][c_c];
 
-  n = Object.values(neighbors);
+  let neighbors = get_neighbors(_p_sp, c_r, c_c);
 
-  //console.log(n);
+  let alive_count = 0;
+  let dead_count = 0;
 
-  for (let i = 0; i < n.length; i++) {
-    if (n[i] !== null) {
-      if (p_space.contents[n[i][0]][n[i][0]].state == 1) {
-        //if all neighbors are 1:
-        c_state = 0;
-      }
-      //console.log(p_space.contents[n[i][0]][n[i][0]].state);
+  for (let i = 0; i < neighbors.length; i++) {
+    if (_p_sp[neighbors[i][0]][neighbors[i][1]].state > 0) {
+      alive_count++;
+    } else {
+      dead_count++;
+    }
+  }
+  //console.log(`neighbors of: ${_idx}:`);
+  //console.log(neighbors);
+  //console.log(alive_count, dead_count);
+
+  if (dead_count > alive_count) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+//given a space, render it.
+function render(_sp) {
+  for (let i = 0; i < _sp.length; i++) {
+    let line = "";
+    for (let j = 0; j < _sp[0].length; j++) {
+      line += _sp[i][j].state + " ";
+    }
+    console.log(line);
+  }
+  console.log("");
+}
+
+//given a space of cells, execute an automaton for n times recursively.
+function automaton(_sp, _n) {
+  //if no generations are left, return the space as is.
+  if (_n === 0) return _sp;
+
+  let p_sp = _sp;
+
+  let rows = p_sp.length;
+  let columns = p_sp[0].length;
+
+  let n_sp = make_space(columns, rows);
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < columns; j++) {
+      let cell_idx = i * columns + j;
+      n_sp[i][j].state = get_new_state(p_sp, cell_idx);
     }
   }
 
+  //show new space n_sp.
+  render(n_sp);
 
+  //recursive case: one generation done, so run the rest on the new space.
+  return automaton(n_sp, _n - 1);
 }
 
-function automata(space) {
-  //for a given space, execute an automata.
+let r = 10;
+let c = 10;
 
-  let p_space = space;
-  space = []; 
+//given dimensions [r, c], make a space.
+let space = make_space(r, c);
 
-  //in each row:
-  for (let r = 0; r < p_space.contents.length; r++) {
-    //console.log("row: " + r);
-    //for each cell:
-    for (let n = 0; n < p_space.contents[r].length; n++) {
-      //console.log("cell: " + p_space.contents[r][n].state);
-      //find its neighbors:
-      let neighbors = get_neighbors(p_space, r, n);
+let n = 10;
 
-      //compute new state:
-      get_new_state(p_space, [r, n], neighbors);
-    }
-  }
-}
+//console.log(space);
+
+automaton(space, n);
