@@ -97,11 +97,8 @@ function render(_sp) {
   console.log("");
 }
 
-//given a space of cells, execute an automaton for n times recursively.
-function automaton(_sp, _n) {
-  //if no generations are left, return the space as is.
-  if (_n === 0) return _sp;
-
+//given a space of cells, execute an automaton till the program is stopped.
+function automaton(_sp) {
   let p_sp = _sp;
 
   let rows = p_sp.length;
@@ -119,8 +116,7 @@ function automaton(_sp, _n) {
   //show new space n_sp.
   render(n_sp);
 
-  //recursive case: one generation done, so run the rest on the new space.
-  return automaton(n_sp, _n - 1);
+  space = n_sp;
 }
 
 let r = 10;
@@ -133,4 +129,11 @@ let n = 10;
 
 //console.log(space);
 
-automaton(space, n);
+let counter = 0;
+
+while (counter < n) {
+  automaton(space);
+
+  console.log("generation: " + counter); 
+  counter++;
+}
