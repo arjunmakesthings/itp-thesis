@@ -1,4 +1,8 @@
-//2-d cellular automata; october 08th, 2026.
+/*
+advanced 2-d automata; october 17th, 2026.
+
+given a set of cells & their initial state, form a temporary change set & then update the cells. 
+*/
 
 //definitions:
 //a cell is an object with properties. currently: state.
@@ -8,16 +12,16 @@ class Cell {
   }
 }
 
-//a space is a collection of cells.
+//given the number of rows & columns, make a collection of cells.
 function make_space(_r, _c) {
   let _sp = [];
-  for (let i = 0; i < _c; i++) {
+  for (let i = 0; i < _r; i++) {
     const row = [];
-    for (let j = 0; j < _r; j++) {
+    for (let j = 0; j < _c; j++) {
       //row.push(new Cell());
       row.push(
         new Cell(
-          i === Math.floor(_c / 2) && j === Math.floor(_r / 2) ? 255 : 0,
+          i === Math.floor(_r / 2) && j === Math.floor(_c / 2) ? 255 : 0,
         ),
       );
     }
@@ -26,15 +30,12 @@ function make_space(_r, _c) {
   return _sp;
 }
 
-//given an index in a representation of a space, return the indices of its neighbors.
-function get_neighbors(_s, _r, _c) {
-  const rows = _s.length;
-  const cols = _s[0].length;
-  //const at = (i, j) =>
-  //  i >= 0 && i < rows && j >= 0 && j < cols ? [i, j] : null;
+//for everything below, we assume the space is global.
 
+//given a space & position of cell in space, return all its neighbors:
+function get_neighbors(_r, _c) {
   //wrapping:
-  const at = (i, j) => [((i % rows) + rows) % rows, ((j % cols) + cols) % cols];
+  const at = (i, j) => [((i % r) + r) % r, ((j % c) + c) % c];
 
   return [
     //up_left: at(_r - 1, _c - 1),
@@ -46,101 +47,77 @@ function get_neighbors(_s, _r, _c) {
     at(_r + 1, _c), //down.
     //down_right: at(_r + 1, _c + 1),
   ];
-
-  //return {
-  //  //up_left: at(_r - 1, _c - 1),
-  //  up: at(_r - 1, _c),
-  //  //up_right: at(_r - 1, _c + 1),
-  //  left: at(_r, _c - 1),
-  //  right: at(_r, _c + 1),
-  //  //down_left: at(_r + 1, _c - 1),
-  //  down: at(_r + 1, _c),
-  //  //down_right: at(_r + 1, _c + 1),
-  //};
 }
 
-//given a space & a cell, evaluate all neighbor states & return a new state for the cell.
-function get_new_state(_p_sp, _idx) {
-  let columns = _p_sp[0].length;
-
-  let c_r = Math.floor(_idx / columns);
-  let c_c = _idx % columns;
-  let cell = _p_sp[c_r][c_c];
-
-  let neighbors = get_neighbors(_p_sp, c_r, c_c);
-
-  const displacement = 10;
-
-  for (let i = 0; i < neighbors.length; i++) {
-    //for each neighbor, if we have more than the neighbor, give displacement the neighbor. else don't do anything.
-
-    let neighbor = _p_sp[neighbors[i][0]][neighbors[i][1]];
-
-    if (cell.state > neighbor.state) {
-      space[neighbors[i][0]][neighbors[i][1]].state += 1;
-      return cell.state - 1;
-    } else {
-      return cell.state;
-    }
-  }
-  //console.log(`neighbors of: ${_idx}:`);
-  //console.log(neighbors);
-  //console.log(alive_count, dead_count);
-
-  return 0;
-}
-
-//given a space, render it.
-function render(_sp) {
-  for (let i = 0; i < _sp.length; i++) {
+//render the global space.
+function render() {
+  for (let i = 0; i < space.length; i++) {
     let line = "";
-    for (let j = 0; j < _sp[0].length; j++) {
-      line += _sp[i][j].state + " ";
+    for (let j = 0; j < space[0].length; j++) {
+      line += space[i][j].state + " ";
     }
     console.log(line);
   }
   console.log("");
 }
 
-//given a space of cells, execute an automaton till the program is stopped.
-function automaton(_sp) {
-  let p_sp = _sp;
+//given a space, return a matrix of the same shape filled with zeroes.
+function make_diff(_sp) {
+  return _sp.map((row) => row.map(() => 0));
+}
 
-  let rows = p_sp.length;
-  let columns = p_sp[0].length;
+function automaton() {
+  let diff_matrix = make_diff(space);
 
-  let n_sp = make_space(columns, rows);
+  const displacement = 1;
 
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < columns; j++) {
-      let cell_idx = i * columns + j;
-      n_sp[i][j].state = get_new_state(p_sp, cell_idx);
+  //for every cell in the matrix, look at its neighbors & get the change:
+  for (let i = 0; i < r; i++) {
+    for (let j = 0; j < c; j++) {
+      let cell = space[i][j];
+      let neighbors = get_neighbors(i, j);
+
+      //a cell can't give away more than it has:
+      let has = cell.state;
+
+      for (let n = 0; n < neighbors.length; n++) {
+        //can't give more:
+        if (has <= 0) break;
+
+        //for each neighbor, if we have more than the neighbor, give to the neighbor at displacement-rate. else don't do anything.
+        let neighbor = space[neighbors[n][0]][neighbors[n][1]];
+
+        if (cell.state > neighbor.state) {
+          diff_matrix[i][j] -= displacement;
+          diff_matrix[neighbors[n][0]][neighbors[n][1]] += displacement;
+          has -= displacement;
+        }
+      }
     }
   }
 
-  //show new space n_sp.
-  //render(n_sp);
-
-  space = n_sp;
+  //once all of that is done, we update the space.
+  for (let i = 0; i < r; i++) {
+    for (let j = 0; j < c; j++) {
+      space[i][j].state += diff_matrix[i][j];
+    }
+  }
 }
 
-let r = 4;
-let c = 4;
+//setup:
+const r = 5;
+const c = 5;
 
-//given dimensions [r, c], make a space.
 let space = make_space(r, c);
 
-console.log(space);
+//show the starting state.
+render();
 
-let n = 10;
+//main loop:
+let n = 50;
 let counter = 0;
-
-//given a max n, execute the automaton.
 while (counter <= n) {
-  console.log("generation: " + counter);
-  automaton(space);
-
-  //given a space, render it.
-  render(space);
+  automaton();
+  render();
   counter++;
 }
