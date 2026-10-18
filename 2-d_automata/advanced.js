@@ -18,12 +18,19 @@ function make_space(_r, _c) {
   for (let i = 0; i < _r; i++) {
     const row = [];
     for (let j = 0; j < _c; j++) {
-      //row.push(new Cell());
-      row.push(
-        new Cell(
-          i === Math.floor(_r / 2) && j === Math.floor(_c / 2) ? 255 : 0,
-        ),
-      );
+      let r = Math.random();
+
+      if (r < 0.5) {
+        row.push(new Cell(1000));
+      } else {
+        row.push(new Cell(0));
+      }
+
+      //row.push(
+      //  new Cell(
+      //    i === Math.floor(_r / 2) && j === Math.floor(_c / 2) ? 5000 : 0,
+      //  ),
+      //);
     }
     _sp.push(row);
   }
@@ -38,14 +45,14 @@ function get_neighbors(_r, _c) {
   const at = (i, j) => [((i % r) + r) % r, ((j % c) + c) % c];
 
   return [
-    //up_left: at(_r - 1, _c - 1),
+    at(_r - 1, _c - 1), //up-left.
     at(_r - 1, _c), //up.
-    //up_right: at(_r - 1, _c + 1),
+    at(_r - 1, _c + 1), //up_right.
     at(_r, _c - 1), //left.
     at(_r, _c + 1), //right.
-    //down_left: at(_r + 1, _c - 1),
+    at(_r + 1, _c - 1), //down_left:
     at(_r + 1, _c), //down.
-    //down_right: at(_r + 1, _c + 1),
+    at(_r + 1, _c + 1), //down_right:
   ];
 }
 
@@ -69,7 +76,7 @@ function make_diff(_sp) {
 function automaton() {
   let diff_matrix = make_diff(space);
 
-  const displacement = 1;
+  const displacement = 2;
 
   //for every cell in the matrix, look at its neighbors & get the change:
   for (let i = 0; i < r; i++) {
@@ -88,9 +95,10 @@ function automaton() {
         let neighbor = space[neighbors[n][0]][neighbors[n][1]];
 
         if (cell.state > neighbor.state) {
-          diff_matrix[i][j] -= displacement;
-          diff_matrix[neighbors[n][0]][neighbors[n][1]] += displacement;
-          has -= displacement;
+          const give = Math.min(displacement, has, cell.state - neighbor.state);
+          diff_matrix[i][j] -= give;
+          diff_matrix[neighbors[n][0]][neighbors[n][1]] += give;
+          has -= give;
         }
       }
     }
@@ -105,19 +113,22 @@ function automaton() {
 }
 
 //setup:
-const r = 5;
-const c = 5;
+const r = 100;
+const c = 100;
 
 let space = make_space(r, c);
 
-//show the starting state.
-render();
-
-//main loop:
-let n = 50;
-let counter = 0;
-while (counter <= n) {
-  automaton();
+if (typeof window === "undefined") {
+  //show the starting state.
   render();
-  counter++;
+
+  //main loop:
+  let n = 10;
+  let counter = 0;
+
+  while (counter <= n) {
+    automaton();
+    render();
+    counter++;
+  }
 }

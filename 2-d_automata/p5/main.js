@@ -1,6 +1,6 @@
 //2d automata; visualized in p5; october 08th 2026.
 
-//source automata lives in ./js.js.
+//source automata lives in ../advanced.js.
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -10,19 +10,16 @@ function setup() {
 
 //execute until program is stopped:
 function draw() {
-  background(255);
+  automaton();
 
-  automaton(space);
+  const ht = height / r;
+  const wt = width / c;
 
-  const rows = space.length;
-  const cols = space.length;
-  const ht = height / rows;
-  const wt = width / cols;
+  noStroke();
 
-  stroke(200);
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      fill(space[i][j].state > 0 ? 0 : 255);
+  for (let i = 0; i < r; i++) {
+    for (let j = 0; j < c; j++) {
+      fill(space[i][j].state);
       rect(j * wt, i * ht, wt, ht); //x follows column, y follows row.
     }
   }
