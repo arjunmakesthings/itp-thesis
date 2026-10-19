@@ -1,0 +1,6 @@
+think of each display as a paradigm. 
+
+humans: 
+  - movement
+  - sharing
+  - communication. 
