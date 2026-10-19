@@ -83,6 +83,8 @@ void update_space() {
 
         if (self.state > neighbor.state) {
           int give = min({displacement, has, self.state - neighbor.state});
+          // arduino has its own min function; hence the change:
+          //int give = min(displacement, min(has, self.state - neighbor.state));
           diff[x][y] -= give;
           diff[n_p.x][n_p.y] += give;
           has -= give;
