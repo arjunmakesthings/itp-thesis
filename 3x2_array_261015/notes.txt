@@ -1,0 +1,9 @@
+this is a 3x2 actuator panel; oriented in row-major order; on an arduino nano.
+
+pinouts are the following: 
+2    3    5
+6    9    10
+
+all pins are capable of producing pwm.
+
+
