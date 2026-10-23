@@ -1,3 +1,7 @@
+/*
+2-d automata; advanced; on an infinite plane.
+*/
+
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -5,7 +9,7 @@ using namespace std;
 
 constexpr int r = 10;
 constexpr int c = 10;
-constexpr int max_run = 2;
+constexpr int max_run = 10;
 
 class cell {
  public:
@@ -84,7 +88,8 @@ void update_space() {
         if (self.state > neighbor.state) {
           int give = min({displacement, has, self.state - neighbor.state});
           // arduino has its own min function; hence the change:
-          //int give = min(displacement, min(has, self.state - neighbor.state));
+          // int give = min(displacement, min(has, self.state -
+          // neighbor.state));
           diff[x][y] -= give;
           diff[n_p.x][n_p.y] += give;
           has -= give;
