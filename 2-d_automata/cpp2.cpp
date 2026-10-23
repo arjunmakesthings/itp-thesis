@@ -8,9 +8,9 @@
 #include <iostream>
 using namespace std;
 
-constexpr int r = 3;
-constexpr int c = 3;
-constexpr int max_run = 2;
+constexpr int r = 10;
+constexpr int c = 10;
+constexpr int max_run = 50;
 
 // neighbors stuff:
 constexpr int neighborhood = 8;
@@ -47,8 +47,8 @@ void render() {
 void make_space() {
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
-      int val = 1;
-      // int val = (x == floor(r / 2) && y == floor(c / 2)) ? 255 : 0;
+      //int val = 1;
+       int val = (x == floor(r / 2) && y == floor(c / 2)) ? 50 : 0;
       space[x][y].state = val;
     }
   }
@@ -102,15 +102,15 @@ array<pos, neighborhood> get_neighbors(int x, int y) {
 void update_space() {
   int diff[r][c] = {};  // temporary difference-matrix; starts at zero.
 
-  const int displacement = 1;  // rate at which things are disseminated.
-  const int capacity = 0;      // a cell can store a certain amount of energy.
+  const int displacement = 5;  // rate at which things are disseminated.
+  const int capacity = 10;      // a cell can store a certain amount of energy.
 
   // go over each cell:
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
       cell& self = space[x][y];
 
-      cout << "cell(" << x << ", " << y << ")" << "\n";
+      //cout << "cell(" << x << ", " << y << ")" << "\n";
 
       int has = self.state;
 
@@ -123,20 +123,19 @@ void update_space() {
         for (int n = 0; n < neighborhood; n++) {
           pos n_p = neighbors[n];
 
-          cout << "neighbor being checked: " << n_p.x << ", " << n_p.y;
+          //cout << "neighbor being checked: " << n_p.x << ", " << n_p.y;
 
           // finite plane logic: skip neighbors off the edge.
           if (!infinite_plane &&
               (n_p.x < 0 || n_p.x >= r || n_p.y < 0 || n_p.y >= c)) {
-            cout << " -> " << "out of bounds" << "\n";
+            //cout << " -> " << "out of bounds" << "\n";
             continue;
           }
 
           // in bounds:
           cell& neighbor = space[n_p.x][n_p.y];
 
-          cout << " -> " << "valid neighbor: " << n_p.x << ", " << n_p.y
-               << "\n";
+          //cout << " -> " << "valid neighbor: " << n_p.x << ", " << n_p.y << "\n";
 
           // cout << "neighbor(" << x << ", " << y << ")";
 
@@ -149,6 +148,9 @@ void update_space() {
             has -= give;
           }
         }
+      }else{
+        //have enough to keep.
+        continue;
       }
     }
   }
