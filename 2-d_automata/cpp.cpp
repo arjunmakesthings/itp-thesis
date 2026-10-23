@@ -1,7 +1,8 @@
 /*
-2-d automata; advanced; on an infinite plane.
+2-d automata; advanced; with the option of being on a finite or infinite plane.
 */
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -9,7 +10,11 @@ using namespace std;
 
 constexpr int r = 10;
 constexpr int c = 10;
-constexpr int max_run = 10;
+constexpr int max_run = 50;
+
+// neighbors stuff:
+constexpr int neighborhood = 8;
+constexpr bool infinite_plane = false;
 
 class cell {
  public:
@@ -38,67 +43,119 @@ void render() {
   }
 }
 
-// given # of rows & columns, make a space.
+// given # of rows & columns, make a space. this function also defines the seed.
 void make_space() {
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
-      // int val = (x + y) % 2;
-      int val = (x == floor(r / 2) && y == floor(c / 2)) ? 255 : 0;
+      //int val = 1;
+       int val = (x == floor(r / 2) && y == floor(c / 2)) ? 50 : 0;
       space[x][y].state = val;
     }
   }
 }
 
-// for updation:
-array<pos, 8> get_neighbors(int x, int y) {
-  int up = (x - 1 + r) % r;
-  int down = (x + 1) % r;
-  int left = (y - 1 + c) % c;
-  int right = (y + 1) % c;
+// neighbors; wrapping on an infinite plane, not wrapping on a finite one:
+array<pos, neighborhood> get_neighbors(int x, int y) {
+  int up = 0;
+  int down = 0;
+  int left = 0;
+  int right = 0;
 
-  return {
-      pos{up, left},     // up-left.
-      pos{up, y},        // up.
-      pos{up, right},    // up-right.
-      pos{x, left},      // left.
-      pos{x, right},     // right.
-      pos{down, left},   // down-left.
-      pos{down, y},      // down.
-      pos{down, right},  // down-right.
-  };
+  if (infinite_plane == true) {
+    // infinite plane:
+    up = (x - 1 + r) % r;
+    down = (x + 1) % r;
+    left = (y - 1 + c) % c;
+    right = (y + 1) % c;
+  } else {
+    // finite plane:
+    up = x - 1;
+    down = x + 1;
+    left = y - 1;
+    right = y + 1;
+  }
+
+  if (neighborhood == 4) {
+    // return von-neumann neighborhood.
+    return {
+        pos{up, y},     // up.
+        pos{x, left},   // left.
+        pos{x, right},  // right.
+        pos{down, y},   // down.
+    };
+  } else {
+    // return moore neighborhood.
+    return {
+        pos{up, left},     // up-left.
+        pos{up, y},        // up.
+        pos{up, right},    // up-right.
+        pos{x, left},      // left.
+        pos{x, right},     // right.
+        pos{down, left},   // down-left.
+        pos{down, y},      // down.
+        pos{down, right},  // down-right.
+    };
+  }
 }
 
+// mutate the global space.
 void update_space() {
-  int diff[r][c] = {};
-  const int displacement = 2;
+  int diff[r][c] = {};  // temporary difference-matrix; starts at zero.
 
+  const int displacement = 5;  // rate at which things are disseminated.
+  const int capacity = 10;      // a cell can store a certain amount of energy.
+
+  // go over each cell:
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
       cell& self = space[x][y];
-      array<pos, 8> neighbors = get_neighbors(x, y);
+
+      //cout << "cell(" << x << ", " << y << ")" << "\n";
 
       int has = self.state;
 
-      for (int n = 0; n < 8; n++) {
-        if (has <= 0) break;
+      if (has > capacity) {
+        // we have stuff to give:
 
-        pos n_p = neighbors[n];
-        cell& neighbor = space[n_p.x][n_p.y];
+        // for each neighbor, go over them & decide displacement in diff_matrix.
+        array<pos, neighborhood> neighbors = get_neighbors(x, y);
 
-        if (self.state > neighbor.state) {
-          int give = min({displacement, has, self.state - neighbor.state});
-          // arduino has its own min function; hence the change:
-          // int give = min(displacement, min(has, self.state -
-          // neighbor.state));
-          diff[x][y] -= give;
-          diff[n_p.x][n_p.y] += give;
-          has -= give;
+        for (int n = 0; n < neighborhood; n++) {
+          pos n_p = neighbors[n];
+
+          //cout << "neighbor being checked: " << n_p.x << ", " << n_p.y;
+
+          // finite plane logic: skip neighbors off the edge.
+          if (!infinite_plane &&
+              (n_p.x < 0 || n_p.x >= r || n_p.y < 0 || n_p.y >= c)) {
+            //cout << " -> " << "out of bounds" << "\n";
+            continue;
+          }
+
+          // in bounds:
+          cell& neighbor = space[n_p.x][n_p.y];
+
+          //cout << " -> " << "valid neighbor: " << n_p.x << ", " << n_p.y << "\n";
+
+          // cout << "neighbor(" << x << ", " << y << ")";
+
+          if (self.state > neighbor.state) {
+            // i have stuff to give:
+            // arduino has its own two-value min; hence the nesting.
+            int give = min(displacement, min(has, self.state - neighbor.state));
+            diff[x][y] -= give;
+            diff[n_p.x][n_p.y] += give;
+            has -= give;
+          }
         }
+      }else{
+        //have enough to keep.
+        continue;
       }
     }
   }
 
-  // apply the change set to the space.
+  // apply the change, and mutate the space:
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
       space[x][y].state += diff[x][y];
@@ -113,12 +170,15 @@ int main() {
   // make space; show it once:
   make_space();
 
-  cout << "generation: " << counter << "\n";
-  render();
-  cout << "\n";
-  while (counter < max_run) {
-    update_space();
-    counter++;
+  // for debug; single run:
+  //update_space();
+
+   cout << "generation: " << counter << "\n";
+   render();
+   cout << "\n";
+   while (counter < max_run) {
+     update_space();
+     counter++;
 
     cout << "generation: " << counter << "\n";
     render();
