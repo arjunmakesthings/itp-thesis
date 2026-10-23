@@ -8,12 +8,12 @@
 #include <iostream>
 using namespace std;
 
-constexpr int r = 10;
-constexpr int c = 10;
-constexpr int max_run = 50;
+constexpr int r = 2;
+constexpr int c = 3;
+constexpr int max_run = 20;
 
 // neighbors stuff:
-constexpr int neighborhood = 8;
+constexpr int neighborhood = 4;
 constexpr bool infinite_plane = false;
 
 class cell {
@@ -48,14 +48,15 @@ void make_space() {
   for (int x = 0; x < r; x++) {
     for (int y = 0; y < c; y++) {
       //int val = 1;
-       int val = (x == floor(r / 2) && y == floor(c / 2)) ? 50 : 0;
+      // int val = (x == floor(r / 2) && y == floor(c / 2)) ? 50 : 0;
+      int val = (x == 0 & y == 0) ? 30 : 0; 
       space[x][y].state = val;
     }
   }
 }
 
 // neighbors; wrapping on an infinite plane, not wrapping on a finite one:
-array<pos, neighborhood> get_neighbors(int x, int y) {
+array<pos, 8> get_neighbors(int x, int y) {
   int up = 0;
   int down = 0;
   int left = 0;
@@ -103,7 +104,7 @@ void update_space() {
   int diff[r][c] = {};  // temporary difference-matrix; starts at zero.
 
   const int displacement = 5;  // rate at which things are disseminated.
-  const int capacity = 10;      // a cell can store a certain amount of energy.
+  const int capacity = 5;      // a cell can store a certain amount of energy.
 
   // go over each cell:
   for (int x = 0; x < r; x++) {
@@ -118,7 +119,7 @@ void update_space() {
         // we have stuff to give:
 
         // for each neighbor, go over them & decide displacement in diff_matrix.
-        array<pos, neighborhood> neighbors = get_neighbors(x, y);
+        array<pos, 8> neighbors = get_neighbors(x, y);
 
         for (int n = 0; n < neighborhood; n++) {
           pos n_p = neighbors[n];
