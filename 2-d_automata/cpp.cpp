@@ -49,7 +49,7 @@ void make_space() {
     for (int y = 0; y < c; y++) {
       //int val = 1;
       // int val = (x == floor(r / 2) && y == floor(c / 2)) ? 50 : 0;
-      int val = (x == 0 & y == 0) ? 30 : 0; 
+      int val = (x == 0 & y == 0) ? 90 : 0; 
       space[x][y].state = val;
     }
   }
@@ -103,8 +103,8 @@ array<pos, 8> get_neighbors(int x, int y) {
 void update_space() {
   int diff[r][c] = {};  // temporary difference-matrix; starts at zero.
 
-  const int displacement = 5;  // rate at which things are disseminated.
-  const int capacity = 5;      // a cell can store a certain amount of energy.
+  const int displacement = 20;  // rate at which things are disseminated.
+  const int capacity = 20;      // a cell can store a certain amount of energy.
 
   // go over each cell:
   for (int x = 0; x < r; x++) {
